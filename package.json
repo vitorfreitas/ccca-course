@@ -5,8 +5,10 @@
   "main": "index.js",
   "scripts": {
     "tsc:init": "tsc --init",
+    "prebuild": "rm -rf dist",
     "build": "tsc",
-    "test": "tsc && jest dist/"
+    "pretest": "npm run build",
+    "test": "jest dist/"
   },
   "keywords": [],
   "author": "",
