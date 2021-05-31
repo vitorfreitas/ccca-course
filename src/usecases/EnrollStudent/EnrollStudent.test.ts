@@ -1,4 +1,4 @@
-import EnrollStudent from './EnrollStudent'
+import EnrollStudent from './index'
 
 test('Should not enroll without valid student name', () => {
   const enrollmentRequest = {
