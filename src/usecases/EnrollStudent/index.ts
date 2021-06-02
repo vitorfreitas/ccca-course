@@ -7,6 +7,7 @@ type Student = {
   name: Name
   cpf: Cpf
   enrollmentCode: string
+  classCode: string
 }
 
 type StudentDTO = {
@@ -41,11 +42,16 @@ export default class EnrollStudent {
     if (isBelowMinimumAge) {
       throw new Error('Student below minimum age')
     }
+    const isOverCapacity = this.isOverCapacity(enrollmentRequest)
+    if (isOverCapacity) {
+      throw new Error('Class is over capacity')
+    }
     const enrollmentCode = this.generateEnrollmentCode(enrollmentRequest)
     const student = {
       name,
       cpf,
-      enrollmentCode
+      enrollmentCode,
+      classCode: enrollmentRequest.classCode
     }
     this.students.push(student)
     return student
@@ -77,6 +83,18 @@ export default class EnrollStudent {
       new Date(enrollmentRequest.student.birthDate)
     )
     return studentAge < currentModule!.minimumAge
+  }
+
+  private isOverCapacity(enrollmentRequest: EnrollmentRequest) {
+    const { classes } = this.coursesRepository.get()
+    const enrollmentClass = classes.find(currentClass =>
+      currentClass.code === enrollmentRequest.classCode
+    )
+    const classLength = this.students.filter(student =>
+      student.classCode === enrollmentRequest.classCode
+    ).length
+
+    return classLength >= enrollmentClass!.capacity
   }
 }
 

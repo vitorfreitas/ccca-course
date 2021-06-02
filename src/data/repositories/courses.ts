@@ -106,7 +106,7 @@ export class CoursesRepository {
           level: 'EM',
           module: '3',
           code: 'A',
-          capacity: 10
+          capacity: 3
         }
       ]
     }

@@ -82,3 +82,30 @@ test('Should not enroll student below minimum age', () => {
   expect(() => enrollStudent.execute(enrollmentRequest))
     .toThrow('Student below minimum age')
 })
+
+test('Should not enroll student over class capacity', () => {
+  const enrollmentRequest = {
+    student: {
+      name: 'Maria Carolina Fonseca',
+      cpf: '755.525.774-26',
+      birthDate: '2002-03-12'
+    },
+    level: 'EM',
+    module: '1',
+    classCode: 'A'
+  }
+  const cpfs = ['762.632.770-50', '702.717.719-68', '830.253.884-12']
+  const enrollStudent = new EnrollStudent(new CoursesRepository())
+  cpfs.forEach(cpf => {
+    const enrollmentRequestMock = {
+      ...enrollmentRequest,
+      student: {
+        ...enrollmentRequest.student,
+        cpf
+      }
+    }
+    enrollStudent.execute(enrollmentRequestMock)
+  })
+  expect(() => enrollStudent.execute(enrollmentRequest))
+    .toThrow('Class is over capacity')
+})
