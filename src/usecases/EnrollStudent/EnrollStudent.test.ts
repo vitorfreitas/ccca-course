@@ -1,5 +1,15 @@
 import EnrollStudent from './index'
 import { CoursesRepository } from '../../data/repositories/courses'
+import EnrollmentRepositoryMemory from "../../data/repositories/Enrollments/EnrollmentRepositoryMemory";
+
+let enrollStudent: EnrollStudent
+
+beforeEach(() => {
+  enrollStudent = new EnrollStudent(
+    new CoursesRepository(),
+    new EnrollmentRepositoryMemory()
+  )
+})
 
 test('Should not enroll without valid student name', () => {
   const enrollmentRequest = {
@@ -12,7 +22,6 @@ test('Should not enroll without valid student name', () => {
     module: '1',
     classCode: 'A'
   }
-  const enrollStudent = new EnrollStudent(new CoursesRepository())
   expect(() => enrollStudent.execute(enrollmentRequest))
     .toThrow('Invalid student name')
 })
@@ -28,7 +37,6 @@ test('Should not enroll without valid student cpf', () => {
     module: '1',
     classCode: 'A'
   }
-  const enrollStudent = new EnrollStudent(new CoursesRepository())
   expect(() => enrollStudent.execute(enrollmentRequest))
     .toThrow('Invalid student cpf')
 })
@@ -44,7 +52,6 @@ test('Should not enroll duplicated student', () => {
     module: '1',
     classCode: 'A'
   }
-  const enrollStudent = new EnrollStudent(new CoursesRepository())
   enrollStudent.execute(enrollmentRequest)
   expect(() => enrollStudent.execute(enrollmentRequest))
     .toThrow('Enrollment with duplicated student is not allowed')
@@ -61,7 +68,6 @@ test('Should generate enrollment code', () => {
     module: '1',
     classCode: 'A'
   }
-  const enrollStudent = new EnrollStudent(new CoursesRepository())
   const enrolledStudent = enrollStudent.execute(enrollmentRequest)
   const currentYear = new Date().getFullYear()
   expect(enrolledStudent.enrollmentCode).toBe(`${currentYear}EM1A0001`)
@@ -78,7 +84,6 @@ test('Should not enroll student below minimum age', () => {
     module: '1',
     classCode: 'A'
   }
-  const enrollStudent = new EnrollStudent(new CoursesRepository())
   expect(() => enrollStudent.execute(enrollmentRequest))
     .toThrow('Student below minimum age')
 })
@@ -95,7 +100,6 @@ test('Should not enroll student over class capacity', () => {
     classCode: 'A'
   }
   const cpfs = ['762.632.770-50', '702.717.719-68', '830.253.884-12']
-  const enrollStudent = new EnrollStudent(new CoursesRepository())
   cpfs.forEach(cpf => {
     const enrollmentRequestMock = {
       ...enrollmentRequest,

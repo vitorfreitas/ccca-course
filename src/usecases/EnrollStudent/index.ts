@@ -1,14 +1,7 @@
-import { Name } from './Name'
-import { Cpf } from './Cpf'
 import { CoursesRepository } from '../../data/repositories/courses'
-import { differenceInYears } from 'date-fns'
-
-type Student = {
-  name: Name
-  cpf: Cpf
-  enrollmentCode: string
-  classCode: string
-}
+import EnrollmentRepository from '../../data/repositories/Enrollments/EnrollmentRepository'
+import Student from './Student'
+import Enrollment from './Enrollment'
 
 type StudentDTO = {
   name: string
@@ -24,21 +17,23 @@ type EnrollmentRequest = {
 }
 
 export default class EnrollStudent {
-  private students: Student[] = []
-
   constructor(
-    private coursesRepository: CoursesRepository
+    private coursesRepository: CoursesRepository,
+    private enrollmentRepository: EnrollmentRepository
   ) {
   }
 
-  public execute(enrollmentRequest: EnrollmentRequest): Student {
-    const name = new Name(enrollmentRequest.student.name)
-    const cpf = new Cpf(enrollmentRequest.student.cpf)
+  public execute(enrollmentRequest: EnrollmentRequest): Enrollment {
+    const student = new Student(
+      enrollmentRequest.student.name,
+      enrollmentRequest.student.cpf,
+      enrollmentRequest.student.birthDate
+    )
     const isDuplicatedStudent = this.isDuplicatedStudent(enrollmentRequest.student)
     if (isDuplicatedStudent) {
       throw new Error('Enrollment with duplicated student is not allowed')
     }
-    const isBelowMinimumAge = this.isBelowMinimumAge(enrollmentRequest)
+    const isBelowMinimumAge = this.isBelowMinimumAge(student, enrollmentRequest)
     if (isBelowMinimumAge) {
       throw new Error('Student below minimum age')
     }
@@ -47,42 +42,34 @@ export default class EnrollStudent {
       throw new Error('Class is over capacity')
     }
     const enrollmentCode = this.generateEnrollmentCode(enrollmentRequest)
-    const student = {
-      name,
-      cpf,
+    const enrollment = new Enrollment(
+      student,
       enrollmentCode,
-      classCode: enrollmentRequest.classCode
-    }
-    this.students.push(student)
-    return student
+      enrollmentRequest.classCode
+    )
+    this.enrollmentRepository.save(enrollment)
+    return enrollment
   }
 
   private isDuplicatedStudent({ cpf }: StudentDTO) {
-    const hasStudent = this.students.find(
-      student => student.cpf.value === cpf
-    )
-
+    const hasStudent = this.enrollmentRepository.findByCpf(cpf)
     return Boolean(hasStudent)
   }
 
   private generateEnrollmentCode(enrollmentRequest: EnrollmentRequest) {
     const { level, module, classCode } = enrollmentRequest
     const currentYear = new Date().getFullYear()
-    const id = (this.students.length + 1).toString().padStart(4, '0')
+    const id = (this.enrollmentRepository.count() + 1).toString().padStart(4, '0')
     return `${currentYear}${level}${module}${classCode}${id}`
   }
 
-  private isBelowMinimumAge(enrollmentRequest: EnrollmentRequest) {
+  private isBelowMinimumAge(student: Student, enrollmentRequest: EnrollmentRequest) {
     const { modules } = this.coursesRepository.get()
     const currentModule = modules.find(module => {
       return module.level === enrollmentRequest.level &&
         module.code === enrollmentRequest.module
     })
-    const studentAge = differenceInYears(
-      new Date(),
-      new Date(enrollmentRequest.student.birthDate)
-    )
-    return studentAge < currentModule!.minimumAge
+    return student.getAge() < currentModule!.minimumAge
   }
 
   private isOverCapacity(enrollmentRequest: EnrollmentRequest) {
@@ -90,8 +77,8 @@ export default class EnrollStudent {
     const enrollmentClass = classes.find(currentClass =>
       currentClass.code === enrollmentRequest.classCode
     )
-    const classLength = this.students.filter(student =>
-      student.classCode === enrollmentRequest.classCode
+    const classLength = this.enrollmentRepository.findAllByClass(
+      enrollmentRequest.classCode
     ).length
 
     return classLength >= enrollmentClass!.capacity
