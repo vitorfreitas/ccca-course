@@ -2,7 +2,7 @@ import { CoursesRepository } from '../../data/repositories/courses'
 import EnrollmentRepository from '../../data/repositories/Enrollments/EnrollmentRepository'
 import Student from './Student'
 import Enrollment from './Enrollment'
-import { differenceInDays } from 'date-fns'
+import { differenceInDays, addMonths } from 'date-fns'
 
 type StudentDTO = {
   name: string
@@ -15,6 +15,7 @@ type EnrollmentRequest = {
   level: string
   module: string
   classCode: string
+  installments: number
 }
 
 export default class EnrollStudent {
@@ -42,19 +43,21 @@ export default class EnrollStudent {
     if (isOverCapacity) {
       throw new Error('Class is over capacity')
     }
-    const isClassAlreadyStarted = this.isClassAlreadyStarted(enrollmentRequest)
-    if (isClassAlreadyStarted) {
-      throw new Error('Class is already started')
-    }
     const isEnrolledAfterEndOfClass = this.isEnrolledAfterEndOfClass(enrollmentRequest)
     if (isEnrolledAfterEndOfClass) {
       throw new Error('Class is already finished')
     }
+    const isClassAlreadyStarted = this.isClassAlreadyStarted(enrollmentRequest)
+    if (isClassAlreadyStarted) {
+      throw new Error('Class is already started')
+    }
+    const installments = this.generateInstallments(enrollmentRequest)
     const enrollmentCode = this.generateEnrollmentCode(enrollmentRequest)
     const enrollment = new Enrollment(
       student,
       enrollmentCode,
-      enrollmentRequest.classCode
+      enrollmentRequest.classCode,
+      installments
     )
     this.enrollmentRepository.save(enrollment)
     return enrollment
@@ -119,6 +122,24 @@ export default class EnrollStudent {
     )
 
     return (daysSinceClassStarted / totalClassDays) > 0.25
+  }
+
+  private generateInstallments(enrollmentRequest: EnrollmentRequest) {
+    const { installments: installmentsQuantity, module: moduleCode, level } = enrollmentRequest
+    const modules = this.coursesRepository.getModules()
+    const module = modules.find(module => module.code === moduleCode && module.level === level)
+    if (!module) {
+      throw new Error('Module not found')
+    }
+    const installmentValue = Number((module.price / installmentsQuantity).toFixed(2))
+    const installmentCorrection = Number((module.price - (installmentValue * installmentsQuantity)).toFixed(2))
+    const installments = new Array(installmentsQuantity).fill(null).map((_, index) => {
+      const isLastInstallment = index + 1 === installmentsQuantity
+      const date = addMonths(new Date(), index)
+      const value = isLastInstallment ? installmentValue + installmentCorrection : installmentValue
+      return { value, date }
+    })
+    return installments
   }
 }
 

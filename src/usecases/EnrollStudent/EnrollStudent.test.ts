@@ -20,7 +20,8 @@ test('Should not enroll without valid student name', () => {
     },
     level: 'EM',
     module: '1',
-    classCode: 'A'
+    classCode: 'A',
+    installments: 12
   }
   expect(() => enrollStudent.execute(enrollmentRequest))
     .toThrow('Invalid student name')
@@ -35,7 +36,8 @@ test('Should not enroll without valid student cpf', () => {
     },
     level: 'EM',
     module: '1',
-    classCode: 'A'
+    classCode: 'A',
+    installments: 12
   }
   expect(() => enrollStudent.execute(enrollmentRequest))
     .toThrow('Invalid student cpf')
@@ -50,7 +52,8 @@ test('Should not enroll duplicated student', () => {
     },
     level: 'EM',
     module: '1',
-    classCode: 'A'
+    classCode: 'A',
+    installments: 12
   }
   enrollStudent.execute(enrollmentRequest)
   expect(() => enrollStudent.execute(enrollmentRequest))
@@ -66,7 +69,8 @@ test('Should generate enrollment code', () => {
     },
     level: 'EM',
     module: '1',
-    classCode: 'A'
+    classCode: 'A',
+    installments: 12
   }
   const enrolledStudent = enrollStudent.execute(enrollmentRequest)
   const currentYear = new Date().getFullYear()
@@ -82,7 +86,8 @@ test('Should not enroll student below minimum age', () => {
     },
     level: 'EM',
     module: '1',
-    classCode: 'A'
+    classCode: 'A',
+    installments: 12
   }
   expect(() => enrollStudent.execute(enrollmentRequest))
     .toThrow('Student below minimum age')
@@ -97,7 +102,8 @@ test('Should not enroll student over class capacity', () => {
     },
     level: 'EM',
     module: '1',
-    classCode: 'A'
+    classCode: 'A',
+    installments: 12
   }
   const cpfs = ['762.632.770-50', '702.717.719-68', '830.253.884-12']
   cpfs.forEach(cpf => {
@@ -131,7 +137,8 @@ test('Should not enroll after que end of the class', () => {
     },
     level: 'EM',
     module: '3',
-    classCode: 'A'
+    classCode: 'A',
+    installments: 12
   }
   enrollStudent['coursesRepository'].getClasses = () => [invalidClass]
   expect(() => enrollStudent.execute(enrollmentRequest))
@@ -155,9 +162,36 @@ test('Should not enroll after 25% of the start of the class', () => {
     },
     level: 'EM',
     module: '3',
-    classCode: 'A'
+    classCode: 'A',
+    installments: 12
   }
   enrollStudent['coursesRepository'].getClasses = () => [invalidClass]
   expect(() => enrollStudent.execute(enrollmentRequest))
     .toThrow('Class is already started')
+})
+
+test('Should generate the invoices based on the number of installments, rounding each amount and applying the rest in the last invoice', () => {
+  const module = {
+    level: 'EM',
+    code: '1',
+    description: '1o Ano',
+    minimumAge: 15,
+    price: 17000
+  }
+  const enrollmentRequest = {
+    student: {
+      name: 'Maria Carolina Fonseca',
+      cpf: '755.525.774-26',
+      birthDate: '2002-03-12'
+    },
+    level: 'EM',
+    module: '1',
+    classCode: 'A',
+    installments: 12
+  }
+  enrollStudent['coursesRepository'].getModules = () => [module]
+  const enrolledStudent = enrollStudent.execute(enrollmentRequest)
+  const installmentsTotal = enrolledStudent.installments.reduce((acc, cur) => acc + cur.value, 0)
+  expect(enrolledStudent.installments.length).toBe(enrollmentRequest.installments)
+  expect(installmentsTotal).toBe(module.price)
 })
