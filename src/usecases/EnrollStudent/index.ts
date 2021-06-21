@@ -41,6 +41,10 @@ export default class EnrollStudent {
     if (isOverCapacity) {
       throw new Error('Class is over capacity')
     }
+    const isEnrolledAfterEndOfClass = this.isEnrolledAfterEndOfClass(enrollmentRequest)
+    if (isEnrolledAfterEndOfClass) {
+      throw new Error('Class is already finished')
+    }
     const enrollmentCode = this.generateEnrollmentCode(enrollmentRequest)
     const enrollment = new Enrollment(
       student,
@@ -64,7 +68,7 @@ export default class EnrollStudent {
   }
 
   private isBelowMinimumAge(student: Student, enrollmentRequest: EnrollmentRequest) {
-    const { modules } = this.coursesRepository.get()
+    const modules = this.coursesRepository.getModules()
     const currentModule = modules.find(module => {
       return module.level === enrollmentRequest.level &&
         module.code === enrollmentRequest.module
@@ -73,7 +77,7 @@ export default class EnrollStudent {
   }
 
   private isOverCapacity(enrollmentRequest: EnrollmentRequest) {
-    const { classes } = this.coursesRepository.get()
+    const classes = this.coursesRepository.getClasses()
     const enrollmentClass = classes.find(currentClass =>
       currentClass.code === enrollmentRequest.classCode
     )
@@ -82,6 +86,14 @@ export default class EnrollStudent {
     ).length
 
     return classLength >= enrollmentClass!.capacity
+  }
+
+  private isEnrolledAfterEndOfClass(enrollmentRequest: EnrollmentRequest) {
+    const classes = this.coursesRepository.getClasses()
+    const enrollmentClass = classes.find(currentClass =>
+      currentClass.code === enrollmentRequest.classCode
+    )
+    return new Date() > new Date(enrollmentClass!.endDate)
   }
 }
 

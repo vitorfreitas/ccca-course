@@ -113,3 +113,27 @@ test('Should not enroll student over class capacity', () => {
   expect(() => enrollStudent.execute(enrollmentRequest))
     .toThrow('Class is over capacity')
 })
+
+test('Should not enroll after que end of the class', () => {
+  const invalidClass = {
+    level: 'EM',
+    module: '3',
+    code: 'A',
+    capacity: 5,
+    startDate: '2020-06-01',
+    endDate: '2020-12-15'
+  }
+  const enrollmentRequest = {
+    student: {
+      name: 'Maria Carolina Fonseca',
+      cpf: '755.525.774-26',
+      birthDate: '2002-03-12'
+    },
+    level: 'EM',
+    module: '3',
+    classCode: 'A'
+  }
+  enrollStudent['coursesRepository'].getClasses = () => [invalidClass]
+  expect(() => enrollStudent.execute(enrollmentRequest))
+    .toThrow('Class is already finished')
+})
