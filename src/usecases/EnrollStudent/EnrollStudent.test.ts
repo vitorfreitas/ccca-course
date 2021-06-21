@@ -137,3 +137,27 @@ test('Should not enroll after que end of the class', () => {
   expect(() => enrollStudent.execute(enrollmentRequest))
     .toThrow('Class is already finished')
 })
+
+test('Should not enroll after 25% of the start of the class', () => {
+  const invalidClass = {
+    level: 'EM',
+    module: '3',
+    code: 'A',
+    capacity: 5,
+    startDate: '2021-01-01',
+    endDate: '2021-12-15'
+  }
+  const enrollmentRequest = {
+    student: {
+      name: 'Maria Carolina Fonseca',
+      cpf: '755.525.774-26',
+      birthDate: '2002-03-12'
+    },
+    level: 'EM',
+    module: '3',
+    classCode: 'A'
+  }
+  enrollStudent['coursesRepository'].getClasses = () => [invalidClass]
+  expect(() => enrollStudent.execute(enrollmentRequest))
+    .toThrow('Class is already started')
+})

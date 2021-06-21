@@ -2,6 +2,7 @@ import { CoursesRepository } from '../../data/repositories/courses'
 import EnrollmentRepository from '../../data/repositories/Enrollments/EnrollmentRepository'
 import Student from './Student'
 import Enrollment from './Enrollment'
+import { differenceInDays } from 'date-fns'
 
 type StudentDTO = {
   name: string
@@ -40,6 +41,10 @@ export default class EnrollStudent {
     const isOverCapacity = this.isOverCapacity(enrollmentRequest)
     if (isOverCapacity) {
       throw new Error('Class is over capacity')
+    }
+    const isClassAlreadyStarted = this.isClassAlreadyStarted(enrollmentRequest)
+    if (isClassAlreadyStarted) {
+      throw new Error('Class is already started')
     }
     const isEnrolledAfterEndOfClass = this.isEnrolledAfterEndOfClass(enrollmentRequest)
     if (isEnrolledAfterEndOfClass) {
@@ -94,6 +99,26 @@ export default class EnrollStudent {
       currentClass.code === enrollmentRequest.classCode
     )
     return new Date() > new Date(enrollmentClass!.endDate)
+  }
+
+  private isClassAlreadyStarted(enrollmentRequest: EnrollmentRequest) {
+    const classes = this.coursesRepository.getClasses()
+    const enrollmentClass = classes.find(currentClass =>
+      currentClass.code === enrollmentRequest.classCode
+    )
+    if (!enrollmentClass) {
+      throw new Error('Class not found')
+    }
+    const totalClassDays = differenceInDays(
+      new Date(enrollmentClass.endDate),
+      new Date(enrollmentClass.startDate)
+    )
+    const daysSinceClassStarted = differenceInDays(
+      new Date(),
+      new Date(enrollmentClass.startDate)
+    )
+
+    return (daysSinceClassStarted / totalClassDays) > 0.25
   }
 }
 
