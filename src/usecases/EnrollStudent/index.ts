@@ -1,8 +1,10 @@
-import { CoursesRepository } from '../../data/repositories/courses'
 import EnrollmentRepository from '../../data/repositories/Enrollments/EnrollmentRepository'
 import Student from './Student'
 import Enrollment from './Enrollment'
 import { differenceInDays, addMonths } from 'date-fns'
+import CourseRepository from '../../data/repositories/Courses/CourseRepository'
+import {Classroom} from "../../data/repositories/Courses/Classroom";
+import {Module} from "../../data/repositories/Courses/Module";
 
 type StudentDTO = {
   name: string
@@ -19,8 +21,9 @@ type EnrollmentRequest = {
 }
 
 export default class EnrollStudent {
+  // eslint-disable-next-line no-useless-constructor
   constructor(
-    private coursesRepository: CoursesRepository,
+    private coursesRepository: CourseRepository,
     private enrollmentRepository: EnrollmentRepository
   ) {
   }
@@ -31,115 +34,51 @@ export default class EnrollStudent {
       enrollmentRequest.student.cpf,
       enrollmentRequest.student.birthDate
     )
-    const isDuplicatedStudent = this.isDuplicatedStudent(enrollmentRequest.student)
+    const classroom = this.coursesRepository.getClassroom(
+      enrollmentRequest.classCode,
+      enrollmentRequest.level,
+      enrollmentRequest.module
+    )
+    const level = this.coursesRepository.getLevel(enrollmentRequest.level)
+    const module = this.coursesRepository.getModule(enrollmentRequest.module, level.code)
+    const isDuplicatedStudent = this.enrollmentRepository.findByCpf(student.cpf.value)
     if (isDuplicatedStudent) {
       throw new Error('Enrollment with duplicated student is not allowed')
     }
-    const isBelowMinimumAge = this.isBelowMinimumAge(student, enrollmentRequest)
+    const isBelowMinimumAge = student.getAge() < module.minimumAge
     if (isBelowMinimumAge) {
       throw new Error('Student below minimum age')
     }
-    const isOverCapacity = this.isOverCapacity(enrollmentRequest)
+    const isOverCapacity = this.isOverCapacity(classroom)
     if (isOverCapacity) {
       throw new Error('Class is over capacity')
     }
-    const isEnrolledAfterEndOfClass = this.isEnrolledAfterEndOfClass(enrollmentRequest)
+    const isEnrolledAfterEndOfClass = classroom.isFinished(new Date())
     if (isEnrolledAfterEndOfClass) {
       throw new Error('Class is already finished')
     }
-    const isClassAlreadyStarted = this.isClassAlreadyStarted(enrollmentRequest)
-    if (isClassAlreadyStarted) {
+    if (classroom.getProgress(new Date()) >= 25) {
       throw new Error('Class is already started')
     }
-    const installments = this.generateInstallments(enrollmentRequest)
-    const enrollmentCode = this.generateEnrollmentCode(enrollmentRequest)
-    const enrollment = new Enrollment(
+    const sequence = this.enrollmentRepository.count() + 1
+    const enrollment = new Enrollment({
       student,
-      enrollmentCode,
-      enrollmentRequest.classCode,
-      installments
-    )
+      classroom,
+      level,
+      module,
+      sequence,
+      issueDate: new Date(),
+      installments: enrollmentRequest.installments,
+    })
     this.enrollmentRepository.save(enrollment)
     return enrollment
   }
 
-  private isDuplicatedStudent({ cpf }: StudentDTO) {
-    const hasStudent = this.enrollmentRepository.findByCpf(cpf)
-    return Boolean(hasStudent)
-  }
-
-  private generateEnrollmentCode(enrollmentRequest: EnrollmentRequest) {
-    const { level, module, classCode } = enrollmentRequest
-    const currentYear = new Date().getFullYear()
-    const id = (this.enrollmentRepository.count() + 1).toString().padStart(4, '0')
-    return `${currentYear}${level}${module}${classCode}${id}`
-  }
-
-  private isBelowMinimumAge(student: Student, enrollmentRequest: EnrollmentRequest) {
-    const modules = this.coursesRepository.getModules()
-    const currentModule = modules.find(module => {
-      return module.level === enrollmentRequest.level &&
-        module.code === enrollmentRequest.module
-    })
-    return student.getAge() < currentModule!.minimumAge
-  }
-
-  private isOverCapacity(enrollmentRequest: EnrollmentRequest) {
-    const classes = this.coursesRepository.getClasses()
-    const enrollmentClass = classes.find(currentClass =>
-      currentClass.code === enrollmentRequest.classCode
-    )
+  private isOverCapacity(classroom: Classroom) {
     const classLength = this.enrollmentRepository.findAllByClass(
-      enrollmentRequest.classCode
+      classroom.code
     ).length
-
-    return classLength >= enrollmentClass!.capacity
-  }
-
-  private isEnrolledAfterEndOfClass(enrollmentRequest: EnrollmentRequest) {
-    const classes = this.coursesRepository.getClasses()
-    const enrollmentClass = classes.find(currentClass =>
-      currentClass.code === enrollmentRequest.classCode
-    )
-    return new Date() > new Date(enrollmentClass!.endDate)
-  }
-
-  private isClassAlreadyStarted(enrollmentRequest: EnrollmentRequest) {
-    const classes = this.coursesRepository.getClasses()
-    const enrollmentClass = classes.find(currentClass =>
-      currentClass.code === enrollmentRequest.classCode
-    )
-    if (!enrollmentClass) {
-      throw new Error('Class not found')
-    }
-    const totalClassDays = differenceInDays(
-      new Date(enrollmentClass.endDate),
-      new Date(enrollmentClass.startDate)
-    )
-    const daysSinceClassStarted = differenceInDays(
-      new Date(),
-      new Date(enrollmentClass.startDate)
-    )
-
-    return (daysSinceClassStarted / totalClassDays) > 0.25
-  }
-
-  private generateInstallments(enrollmentRequest: EnrollmentRequest) {
-    const { installments: installmentsQuantity, module: moduleCode, level } = enrollmentRequest
-    const modules = this.coursesRepository.getModules()
-    const module = modules.find(module => module.code === moduleCode && module.level === level)
-    if (!module) {
-      throw new Error('Module not found')
-    }
-    const installmentValue = Number((module.price / installmentsQuantity).toFixed(2))
-    const installmentCorrection = Number((module.price - (installmentValue * installmentsQuantity)).toFixed(2))
-    const installments = new Array(installmentsQuantity).fill(null).map((_, index) => {
-      const isLastInstallment = index + 1 === installmentsQuantity
-      const date = addMonths(new Date(), index)
-      const value = isLastInstallment ? installmentValue + installmentCorrection : installmentValue
-      return { value, date }
-    })
-    return installments
+    return classLength >= classroom.capacity
   }
 }
 

@@ -1,12 +1,13 @@
 import EnrollStudent from './index'
-import { CoursesRepository } from '../../data/repositories/courses'
-import EnrollmentRepositoryMemory from "../../data/repositories/Enrollments/EnrollmentRepositoryMemory";
+import { CoursesRepositoryMemory } from '../../data/repositories/Courses/CourseRepositoryMemory'
+import EnrollmentRepositoryMemory from '../../data/repositories/Enrollments/EnrollmentRepositoryMemory'
+import {Classroom} from "../../data/repositories/Courses/Classroom";
 
 let enrollStudent: EnrollStudent
 
 beforeEach(() => {
   enrollStudent = new EnrollStudent(
-    new CoursesRepository(),
+    new CoursesRepositoryMemory(),
     new EnrollmentRepositoryMemory()
   )
 })
@@ -51,7 +52,7 @@ test('Should not enroll duplicated student', () => {
       birthDate: '2001-01-01'
     },
     level: 'EM',
-    module: '1',
+    module: '3',
     classCode: 'A',
     installments: 12
   }
@@ -68,13 +69,13 @@ test('Should generate enrollment code', () => {
       birthDate: '2002-03-12'
     },
     level: 'EM',
-    module: '1',
+    module: '3',
     classCode: 'A',
     installments: 12
   }
   const enrolledStudent = enrollStudent.execute(enrollmentRequest)
   const currentYear = new Date().getFullYear()
-  expect(enrolledStudent.enrollmentCode).toBe(`${currentYear}EM1A0001`)
+  expect(enrolledStudent.enrollmentCode.value).toBe(`${currentYear}EM3A0001`)
 })
 
 test('Should not enroll student below minimum age', () => {
@@ -85,7 +86,7 @@ test('Should not enroll student below minimum age', () => {
       birthDate: '2007-03-12'
     },
     level: 'EM',
-    module: '1',
+    module: '3',
     classCode: 'A',
     installments: 12
   }
@@ -101,7 +102,7 @@ test('Should not enroll student over class capacity', () => {
       birthDate: '2002-03-12'
     },
     level: 'EM',
-    module: '1',
+    module: '3',
     classCode: 'A',
     installments: 12
   }
@@ -121,14 +122,14 @@ test('Should not enroll student over class capacity', () => {
 })
 
 test('Should not enroll after que end of the class', () => {
-  const invalidClass = {
+  const invalidClass = new Classroom({
     level: 'EM',
     module: '3',
     code: 'A',
     capacity: 5,
     startDate: '2020-06-01',
     endDate: '2020-12-15'
-  }
+  })
   const enrollmentRequest = {
     student: {
       name: 'Maria Carolina Fonseca',
@@ -140,20 +141,20 @@ test('Should not enroll after que end of the class', () => {
     classCode: 'A',
     installments: 12
   }
-  enrollStudent['coursesRepository'].getClasses = () => [invalidClass]
+  enrollStudent['coursesRepository'].getClassrooms = () => [invalidClass]
   expect(() => enrollStudent.execute(enrollmentRequest))
     .toThrow('Class is already finished')
 })
 
 test('Should not enroll after 25% of the start of the class', () => {
-  const invalidClass = {
+  const invalidClass = new Classroom({
     level: 'EM',
     module: '3',
     code: 'A',
     capacity: 5,
     startDate: '2021-01-01',
     endDate: '2021-12-15'
-  }
+  })
   const enrollmentRequest = {
     student: {
       name: 'Maria Carolina Fonseca',
@@ -165,7 +166,7 @@ test('Should not enroll after 25% of the start of the class', () => {
     classCode: 'A',
     installments: 12
   }
-  enrollStudent['coursesRepository'].getClasses = () => [invalidClass]
+  enrollStudent['coursesRepository'].getClassrooms = () => [invalidClass]
   expect(() => enrollStudent.execute(enrollmentRequest))
     .toThrow('Class is already started')
 })
@@ -173,7 +174,7 @@ test('Should not enroll after 25% of the start of the class', () => {
 test('Should generate the invoices based on the number of installments, rounding each amount and applying the rest in the last invoice', () => {
   const module = {
     level: 'EM',
-    code: '1',
+    code: '3',
     description: '1o Ano',
     minimumAge: 15,
     price: 17000
@@ -185,13 +186,13 @@ test('Should generate the invoices based on the number of installments, rounding
       birthDate: '2002-03-12'
     },
     level: 'EM',
-    module: '1',
+    module: '3',
     classCode: 'A',
     installments: 12
   }
   enrollStudent['coursesRepository'].getModules = () => [module]
   const enrolledStudent = enrollStudent.execute(enrollmentRequest)
-  const installmentsTotal = enrolledStudent.installments.reduce((acc, cur) => acc + cur.value, 0)
+  const installmentsTotal = enrolledStudent.installments.reduce((acc, cur) => acc + cur.amount, 0)
   expect(enrolledStudent.installments.length).toBe(enrollmentRequest.installments)
   expect(installmentsTotal).toBe(module.price)
 })

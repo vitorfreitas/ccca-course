@@ -13,7 +13,7 @@ export default class EnrollmentRepositoryMemory implements EnrollmentRepository 
   }
 
   findAllByClass(classCode: string): any[] {
-    return this.enrollments.filter(enrollment => enrollment.classCode === classCode)
+    return this.enrollments.filter(enrollment => enrollment.classroom.code === classCode)
   }
 
   findByCpf(cpf: string): any {
