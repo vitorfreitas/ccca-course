@@ -1,7 +1,7 @@
-import EnrollStudent from './index'
-import { CoursesRepositoryMemory } from '../../data/repositories/Courses/CourseRepositoryMemory'
+import EnrollStudent from './EnrollStudent'
+import CoursesRepositoryMemory from '../../data/repositories/Courses/CourseRepositoryMemory'
 import EnrollmentRepositoryMemory from '../../data/repositories/Enrollments/EnrollmentRepositoryMemory'
-import {Classroom} from "../../data/repositories/Courses/Classroom";
+import { Classroom } from '../../data/repositories/Courses/Classroom'
 
 let enrollStudent: EnrollStudent
 

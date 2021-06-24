@@ -23,4 +23,12 @@ export default class EnrollmentRepositoryMemory implements EnrollmentRepository 
   save(enrollment: any): void {
     this.enrollments.push(enrollment)
   }
+
+  findByCode(enrollmentCode: string): Enrollment {
+    const enrollment = this.enrollments.find(enrollment => enrollment.enrollmentCode.value === enrollmentCode)
+    if (!enrollment) {
+      throw new Error('Enrollment not found')
+    }
+    return enrollment
+  }
 }

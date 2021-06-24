@@ -4,7 +4,7 @@ import { Classroom } from '../../data/repositories/Courses/Classroom'
 import { Module } from '../../data/repositories/Courses/Module'
 import { Level } from '../../data/repositories/Courses/Level'
 import EnrollmentCode from './EnrollmentCode'
-import {Installment} from "./Installment";
+import { Installment } from './Installment'
 
 export default class Enrollment {
   student: Student

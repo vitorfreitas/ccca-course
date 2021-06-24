@@ -3,7 +3,7 @@ import { Classroom } from './Classroom'
 import { Module } from './Module'
 import { Level } from './Level'
 
-export class CoursesRepositoryMemory implements CourseRepository {
+export default class CoursesRepositoryMemory implements CourseRepository {
   getLevels () {
     return [
       new Level({
