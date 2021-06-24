@@ -5,6 +5,7 @@ import { differenceInDays, addMonths } from 'date-fns'
 import CourseRepository from '../../data/repositories/Courses/CourseRepository'
 import {Classroom} from "../../data/repositories/Courses/Classroom";
 import {Module} from "../../data/repositories/Courses/Module";
+import RepositoryAbstractFactory from "./RepositoryAbstractFactory";
 
 type StudentDTO = {
   name: string
@@ -21,11 +22,12 @@ type EnrollmentRequest = {
 }
 
 export default class EnrollStudent {
-  // eslint-disable-next-line no-useless-constructor
-  constructor(
-    private coursesRepository: CourseRepository,
-    private enrollmentRepository: EnrollmentRepository
-  ) {
+  private courseRepository: CourseRepository
+  private enrollmentRepository: EnrollmentRepository
+
+  constructor(repositoryFactory: RepositoryAbstractFactory) {
+    this.courseRepository = repositoryFactory.createCourseRepository()
+    this.enrollmentRepository = repositoryFactory.createEnrollmentRepository()
   }
 
   public execute(enrollmentRequest: EnrollmentRequest): Enrollment {
@@ -34,13 +36,13 @@ export default class EnrollStudent {
       enrollmentRequest.student.cpf,
       enrollmentRequest.student.birthDate
     )
-    const classroom = this.coursesRepository.getClassroom(
+    const classroom = this.courseRepository.getClassroom(
       enrollmentRequest.classCode,
       enrollmentRequest.level,
       enrollmentRequest.module
     )
-    const level = this.coursesRepository.getLevel(enrollmentRequest.level)
-    const module = this.coursesRepository.getModule(enrollmentRequest.module, level.code)
+    const level = this.courseRepository.getLevel(enrollmentRequest.level)
+    const module = this.courseRepository.getModule(enrollmentRequest.module, level.code)
     const isDuplicatedStudent = this.enrollmentRepository.findByCpf(student.cpf.value)
     if (isDuplicatedStudent) {
       throw new Error('Enrollment with duplicated student is not allowed')

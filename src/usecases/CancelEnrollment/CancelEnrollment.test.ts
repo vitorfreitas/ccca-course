@@ -1,18 +1,15 @@
 import EnrollStudent from '../EnrollStudent/EnrollStudent'
-import EnrollmentRepositoryMemory from '../../data/repositories/Enrollments/EnrollmentRepositoryMemory'
-import CoursesRepositoryMemory from '../../data/repositories/Courses/CourseRepositoryMemory'
 import CancelEnrollment from './CancelEnrollment'
+import RepositoryMemoryFactory from '../EnrollStudent/RepositoryMemoryFactory'
 
 let cancelEnrollment: CancelEnrollment
 let enrollStudent: EnrollStudent
 
 beforeEach(() => {
-  const enrollmentRepositoryMemory = new EnrollmentRepositoryMemory()
   enrollStudent = new EnrollStudent(
-    new CoursesRepositoryMemory(),
-    enrollmentRepositoryMemory
+    new RepositoryMemoryFactory()
   )
-  cancelEnrollment = new CancelEnrollment(enrollmentRepositoryMemory)
+  cancelEnrollment = new CancelEnrollment(enrollStudent['enrollmentRepository'])
 })
 
 test('Should cancel enrollment', () => {

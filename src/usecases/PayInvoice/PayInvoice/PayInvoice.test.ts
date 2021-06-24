@@ -1,18 +1,15 @@
 import EnrollStudent from '../../EnrollStudent/EnrollStudent'
-import EnrollmentRepositoryMemory from '../../../data/repositories/Enrollments/EnrollmentRepositoryMemory'
-import CoursesRepositoryMemory from '../../../data/repositories/Courses/CourseRepositoryMemory'
 import PayInvoice from '../PayInvoice'
+import RepositoryMemoryFactory from '../../EnrollStudent/RepositoryMemoryFactory'
 
 let payInvoice: PayInvoice
 let enrollStudent: EnrollStudent
 
 beforeEach(() => {
-  const enrollmentRepositoryMemory = new EnrollmentRepositoryMemory()
   enrollStudent = new EnrollStudent(
-    new CoursesRepositoryMemory(),
-    enrollmentRepositoryMemory
+    new RepositoryMemoryFactory()
   )
-  payInvoice = new PayInvoice(enrollmentRepositoryMemory)
+  payInvoice = new PayInvoice(enrollStudent['enrollmentRepository'])
 })
 
 test('Should pay enrollment invoice', () => {

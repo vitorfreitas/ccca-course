@@ -1,14 +1,12 @@
 import EnrollStudent from './EnrollStudent'
-import CoursesRepositoryMemory from '../../data/repositories/Courses/CourseRepositoryMemory'
-import EnrollmentRepositoryMemory from '../../data/repositories/Enrollments/EnrollmentRepositoryMemory'
 import { Classroom } from '../../data/repositories/Courses/Classroom'
+import RepositoryMemoryFactory from './RepositoryMemoryFactory'
 
 let enrollStudent: EnrollStudent
 
 beforeEach(() => {
   enrollStudent = new EnrollStudent(
-    new CoursesRepositoryMemory(),
-    new EnrollmentRepositoryMemory()
+    new RepositoryMemoryFactory()
   )
 })
 
@@ -141,7 +139,7 @@ test('Should not enroll after que end of the class', () => {
     classCode: 'A',
     installments: 12
   }
-  enrollStudent['coursesRepository'].getClassrooms = () => [invalidClass]
+  enrollStudent['courseRepository'].getClassrooms = () => [invalidClass]
   expect(() => enrollStudent.execute(enrollmentRequest))
     .toThrow('Class is already finished')
 })
@@ -166,7 +164,7 @@ test('Should not enroll after 25% of the start of the class', () => {
     classCode: 'A',
     installments: 12
   }
-  enrollStudent['coursesRepository'].getClassrooms = () => [invalidClass]
+  enrollStudent['courseRepository'].getClassrooms = () => [invalidClass]
   expect(() => enrollStudent.execute(enrollmentRequest))
     .toThrow('Class is already started')
 })
@@ -190,7 +188,7 @@ test('Should generate the invoices based on the number of installments, rounding
     classCode: 'A',
     installments: 12
   }
-  enrollStudent['coursesRepository'].getModules = () => [module]
+  enrollStudent['courseRepository'].getModules = () => [module]
   const enrolledStudent = enrollStudent.execute(enrollmentRequest)
   const installmentsTotal = enrolledStudent.installments.reduce((acc, cur) => acc + cur.amount, 0)
   expect(enrolledStudent.installments.length).toBe(enrollmentRequest.installments)

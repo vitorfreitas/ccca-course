@@ -1,18 +1,15 @@
 import GetEnrollment from './GetEnrollment'
 import EnrollStudent from '../EnrollStudent/EnrollStudent'
-import CoursesRepositoryMemory from '../../data/repositories/Courses/CourseRepositoryMemory'
-import EnrollmentRepositoryMemory from '../../data/repositories/Enrollments/EnrollmentRepositoryMemory'
+import RepositoryMemoryFactory from '../EnrollStudent/RepositoryMemoryFactory'
 
 let getEnrollment: GetEnrollment
 let enrollStudent: EnrollStudent
 
 beforeEach(() => {
-  const enrollmentRepositoryMemory = new EnrollmentRepositoryMemory()
   enrollStudent = new EnrollStudent(
-    new CoursesRepositoryMemory(),
-    enrollmentRepositoryMemory
+    new RepositoryMemoryFactory()
   )
-  getEnrollment = new GetEnrollment(enrollmentRepositoryMemory)
+  getEnrollment = new GetEnrollment(enrollStudent['enrollmentRepository'])
 })
 
 test('Should get enrollment by code with invoice balance', () => {
