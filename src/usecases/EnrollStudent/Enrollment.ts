@@ -37,6 +37,13 @@ export default class Enrollment {
     })
   }
 
+  getInstallmentsBalance() {
+    const balance = this.installments
+      .filter(installment => installment.status === 'not_paid')
+      .reduce((acc, cur) => cur.amount + acc, 0)
+    return Number(balance.toFixed(2))
+  }
+
   private generateInstallments(installmentsQuantity: number, issueDate: Date) {
     const installmentValue = Number((this.module.price / installmentsQuantity).toFixed(2))
     const installmentCorrection = Number((this.module.price - (installmentValue * installmentsQuantity)).toFixed(2))

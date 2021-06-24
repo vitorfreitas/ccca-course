@@ -8,4 +8,8 @@ export class Installment {
     this.dueDate = dueDate
     this.status = 'not_paid'
   }
+
+  pay() {
+    this.status = 'paid'
+  }
 }
