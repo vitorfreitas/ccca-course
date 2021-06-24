@@ -13,6 +13,7 @@ export default class Enrollment {
   module: Module
   classroom: Classroom
   installments: Installment[]
+  status: 'in_progress' | 'cancelled'
 
   constructor(params: {
     student: Student
@@ -27,6 +28,7 @@ export default class Enrollment {
     this.classroom = params.classroom
     this.level = params.level
     this.module = params.module
+    this.status = 'in_progress'
     this.installments = this.generateInstallments(params.installments, params.issueDate)
     this.enrollmentCode = new EnrollmentCode({
       classCode: this.classroom.code,
@@ -42,6 +44,10 @@ export default class Enrollment {
       .filter(installment => installment.status === 'not_paid')
       .reduce((acc, cur) => cur.amount + acc, 0)
     return Number(balance.toFixed(2))
+  }
+
+  cancel() {
+    this.status = 'cancelled'
   }
 
   private generateInstallments(installmentsQuantity: number, issueDate: Date) {
