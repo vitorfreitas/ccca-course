@@ -1,6 +1,7 @@
 import EnrollStudent from '../../EnrollStudent/EnrollStudent'
 import PayInvoice from '../PayInvoice'
 import RepositoryMemoryFactory from '../../EnrollStudent/RepositoryMemoryFactory'
+import EnrollStudentInputData from '../../EnrollStudent/EnrollStudentInputData'
 
 let payInvoice: PayInvoice
 let enrollStudent: EnrollStudent
@@ -13,17 +14,15 @@ beforeEach(() => {
 })
 
 test('Should pay enrollment invoice', () => {
-  const enrollmentRequest = {
-    student: {
-      name: 'Maria Carolina Fonseca',
-      cpf: '755.525.774-26',
-      birthDate: '2002-03-12'
-    },
+  const enrollmentRequest = new EnrollStudentInputData({
+    studentName: 'Maria Carolina Fonseca',
+    studentCpf: '755.525.774-26',
+    studentBirthDate: '2002-03-12',
     level: 'EM',
     module: '3',
     classCode: 'A',
     installments: 12
-  }
+  })
   enrollStudent.execute(enrollmentRequest)
   const payInvoiceRequest = {
     code: `${new Date().getFullYear()}EM3A0001`,

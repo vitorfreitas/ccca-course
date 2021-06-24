@@ -1,25 +1,11 @@
 import EnrollmentRepository from '../../data/repositories/Enrollments/EnrollmentRepository'
 import Student from './Student'
 import Enrollment from './Enrollment'
-import { differenceInDays, addMonths } from 'date-fns'
 import CourseRepository from '../../data/repositories/Courses/CourseRepository'
-import {Classroom} from "../../data/repositories/Courses/Classroom";
-import {Module} from "../../data/repositories/Courses/Module";
-import RepositoryAbstractFactory from "./RepositoryAbstractFactory";
-
-type StudentDTO = {
-  name: string
-  cpf: string
-  birthDate: string
-}
-
-type EnrollmentRequest = {
-  student: StudentDTO
-  level: string
-  module: string
-  classCode: string
-  installments: number
-}
+import { Classroom } from '../../data/repositories/Courses/Classroom'
+import RepositoryAbstractFactory from './RepositoryAbstractFactory'
+import EnrollStudentInputData from './EnrollStudentInputData'
+import EnrollStudentOutputData from './EnrollStudentOutputData'
 
 export default class EnrollStudent {
   private courseRepository: CourseRepository
@@ -30,11 +16,11 @@ export default class EnrollStudent {
     this.enrollmentRepository = repositoryFactory.createEnrollmentRepository()
   }
 
-  public execute(enrollmentRequest: EnrollmentRequest): Enrollment {
+  public execute(enrollmentRequest: EnrollStudentInputData): EnrollStudentOutputData {
     const student = new Student(
-      enrollmentRequest.student.name,
-      enrollmentRequest.student.cpf,
-      enrollmentRequest.student.birthDate
+      enrollmentRequest.studentName,
+      enrollmentRequest.studentCpf,
+      enrollmentRequest.studentBirthDate
     )
     const classroom = this.courseRepository.getClassroom(
       enrollmentRequest.classCode,
@@ -70,10 +56,10 @@ export default class EnrollStudent {
       module,
       sequence,
       issueDate: new Date(),
-      installments: enrollmentRequest.installments,
+      installments: enrollmentRequest.installments
     })
     this.enrollmentRepository.save(enrollment)
-    return enrollment
+    return new EnrollStudentOutputData(enrollment.enrollmentCode.value, enrollment.installments)
   }
 
   private isOverCapacity(classroom: Classroom) {
@@ -83,4 +69,3 @@ export default class EnrollStudent {
     return classLength >= classroom.capacity
   }
 }
-
