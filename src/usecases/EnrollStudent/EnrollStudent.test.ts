@@ -174,3 +174,18 @@ test('Should generate the invoices based on the number of installments, rounding
   expect(enrolledStudent.installments.length).toBe(enrollmentRequest.installments)
   expect(installmentsTotal).toBe(module.price)
 })
+
+test('Should calculate due date and return status open or overdue for each invoice', () => {
+  const enrollmentRequest = new EnrollStudentInputData({
+    studentName: 'Maria Carolina Fonseca',
+    studentCpf: '755.525.774-26',
+    studentBirthDate: '2002-03-12',
+    level: 'EM',
+    module: '3',
+    classCode: 'A',
+    installments: 12
+  })
+  const enrolledStudent = enrollStudent.execute(enrollmentRequest)
+  expect(enrolledStudent.installments[0].dueDate.toLocaleDateString('pt')).toBe('05/01/2021')
+  expect(enrolledStudent.installments[11].dueDate.toLocaleDateString('pt')).toBe('05/12/2021')
+})

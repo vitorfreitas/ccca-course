@@ -70,8 +70,9 @@ export default class Enrollment {
     const installmentValue = Number((this.module.price / installmentsQuantity).toFixed(2))
     const installmentCorrection = Number((this.module.price - (installmentValue * installmentsQuantity)).toFixed(2))
     const installments = new Array(installmentsQuantity).fill(null).map((_, index) => {
+      const startDate = new Date(new Date().getFullYear(), 0, 5)
       const isLastInstallment = index + 1 === installmentsQuantity
-      const dueDate = addMonths(issueDate, index)
+      const dueDate = addMonths(startDate, index)
       const value = isLastInstallment ? installmentValue + installmentCorrection : installmentValue
       return new Installment(value, dueDate)
     })
