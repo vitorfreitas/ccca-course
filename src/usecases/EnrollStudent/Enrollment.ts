@@ -5,6 +5,7 @@ import { Module } from '../../data/repositories/Courses/Module'
 import { Level } from '../../data/repositories/Courses/Level'
 import EnrollmentCode from './EnrollmentCode'
 import { Installment } from './Installment'
+import InvoiceEvent from './InvoiceEvent'
 
 export default class Enrollment {
   student: Student
@@ -41,13 +42,28 @@ export default class Enrollment {
 
   getInstallmentsBalance() {
     const balance = this.installments
-      .filter(installment => installment.status === 'not_paid')
-      .reduce((acc, cur) => cur.amount + acc, 0)
+      .reduce((total, installment) => total + installment.getBalance(), 0)
     return Number(balance.toFixed(2))
   }
 
   cancel() {
     this.status = 'cancelled'
+  }
+
+  payInstallment(
+    month: number,
+    year: number,
+    amount: number
+  ): void {
+    const installment = this.installments.find(installment => {
+      const dueYear = installment.dueDate.getFullYear()
+      const dueMonth = installment.dueDate.getMonth()
+      return dueYear === year && dueMonth === month
+    })
+    if (!installment) {
+      throw new Error('Invalid installment')
+    }
+    installment.addEvent(new InvoiceEvent('payment', amount))
   }
 
   private generateInstallments(installmentsQuantity: number, issueDate: Date) {

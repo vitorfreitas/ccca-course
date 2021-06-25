@@ -14,12 +14,7 @@ export default class PayInvoice {
 
   execute(request: PayInvoiceRequest): number {
     const enrollment = this.enrollmentRepository.findByCode(request.code)
-    const installment = enrollment.installments.find(installment => {
-      const year = installment.dueDate.getFullYear()
-      const month = installment.dueDate.getMonth()
-      return year === request.year && month === request.month
-    })
-    installment?.pay()
+    enrollment.payInstallment(request.month, request.year, request.amount)
     return enrollment.getInstallmentsBalance()
   }
 }

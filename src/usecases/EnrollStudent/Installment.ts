@@ -1,15 +1,21 @@
+import InvoiceEvent from './InvoiceEvent'
+
 export class Installment {
   amount: number
   dueDate: Date
-  status: 'paid' | 'not_paid'
+  events: InvoiceEvent[]
 
   constructor(amount: number, dueDate: Date) {
     this.amount = amount
     this.dueDate = dueDate
-    this.status = 'not_paid'
+    this.events = []
   }
 
-  pay() {
-    this.status = 'paid'
+  addEvent(event: InvoiceEvent) {
+    this.events.push(event)
+  }
+
+  getBalance(): number {
+    return this.events.reduce((total, event) => total - event.amount, this.amount)
   }
 }

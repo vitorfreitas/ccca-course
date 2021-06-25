@@ -7,10 +7,9 @@ let getEnrollment: GetEnrollment
 let enrollStudent: EnrollStudent
 
 beforeEach(() => {
-  enrollStudent = new EnrollStudent(
-    new RepositoryMemoryFactory()
-  )
-  getEnrollment = new GetEnrollment(enrollStudent['enrollmentRepository'])
+  const repositoryMemoryFactory = new RepositoryMemoryFactory()
+  enrollStudent = new EnrollStudent(repositoryMemoryFactory)
+  getEnrollment = new GetEnrollment(repositoryMemoryFactory)
 })
 
 test('Should get enrollment by code with invoice balance', () => {
@@ -26,8 +25,6 @@ test('Should get enrollment by code with invoice balance', () => {
   const code = `${new Date().getFullYear()}EM3A0001`
   const createdEnrollment = enrollStudent.execute(enrollmentRequest)
   const enrollment = getEnrollment.execute({ code })
-  expect(enrollment).toEqual({
-    code: createdEnrollment.code,
-    balance: 17000
-  })
+  expect(enrollment.code).toBe(createdEnrollment.code)
+  expect(enrollment.balance).toBe(17000)
 })

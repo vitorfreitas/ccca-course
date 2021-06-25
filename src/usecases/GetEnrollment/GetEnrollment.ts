@@ -1,9 +1,12 @@
 import EnrollmentRepository from '../../data/repositories/Enrollments/EnrollmentRepository'
-import GetEnrollmentOutputData from "./GetEnrollmentOutputData";
+import GetEnrollmentOutputData from './GetEnrollmentOutputData'
+import RepositoryAbstractFactory from '../EnrollStudent/RepositoryAbstractFactory'
 
 export default class GetEnrollment {
-  // eslint-disable-next-line no-useless-constructor
-  constructor(private enrollmentRepository: EnrollmentRepository) {
+  private enrollmentRepository: EnrollmentRepository
+
+  constructor(repositoryFactory: RepositoryAbstractFactory) {
+    this.enrollmentRepository = repositoryFactory.createEnrollmentRepository()
   }
 
   execute({ code }: { code: string }): GetEnrollmentOutputData {
