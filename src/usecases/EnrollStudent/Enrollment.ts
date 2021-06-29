@@ -1,4 +1,4 @@
-import { addMonths } from 'date-fns'
+import { addMonths, differenceInDays } from 'date-fns'
 import Student from './Student'
 import { Classroom } from '../../data/repositories/Courses/Classroom'
 import { Module } from '../../data/repositories/Courses/Module'
@@ -44,6 +44,34 @@ export default class Enrollment {
     const balance = this.installments
       .reduce((total, installment) => total + installment.getBalance(), 0)
     return Number(balance.toFixed(2))
+  }
+
+  getPenalty(fromDate: Date) {
+    const [
+      firstUnpaidInstallment
+    ] = this.installments.filter(
+      installment => installment.getBalance() > 0
+    )
+    if (firstUnpaidInstallment.dueDate < fromDate) {
+      return firstUnpaidInstallment.getBalance() * .1
+    }
+    return 0
+  }
+
+  getInterests(fromDate: Date) {
+    const [
+      firstUnpaidInstallment
+    ] = this.installments.filter(
+      installment => installment.getBalance() > 0
+    )
+    if (firstUnpaidInstallment.dueDate < fromDate) {
+      const daysWithoutPaying = differenceInDays(
+        new Date(),
+        firstUnpaidInstallment.dueDate
+      )
+      return firstUnpaidInstallment.getBalance() * (daysWithoutPaying / 100)
+    }
+    return 0
   }
 
   cancel() {
