@@ -46,30 +46,30 @@ export default class Enrollment {
     return Number(balance.toFixed(2))
   }
 
-  getPenalty(fromDate: Date) {
+  getPenalty(fromDate: Date = new Date()) {
     const [
       firstUnpaidInstallment
     ] = this.installments.filter(
       installment => installment.getBalance() > 0
     )
-    if (firstUnpaidInstallment.dueDate < fromDate) {
+    if (firstUnpaidInstallment.dueDate.getMonth() < fromDate.getMonth()) {
       return firstUnpaidInstallment.getBalance() * .1
     }
     return 0
   }
 
-  getInterests(fromDate: Date) {
+  getInterests(fromDate: Date = new Date()) {
     const [
       firstUnpaidInstallment
     ] = this.installments.filter(
       installment => installment.getBalance() > 0
     )
-    if (firstUnpaidInstallment.dueDate < fromDate) {
+    if (firstUnpaidInstallment.dueDate.getMonth() < fromDate.getMonth()) {
       const daysWithoutPaying = differenceInDays(
         new Date(),
         firstUnpaidInstallment.dueDate
       )
-      return firstUnpaidInstallment.getBalance() * (daysWithoutPaying / 100)
+      return firstUnpaidInstallment.getBalance() * .01 * daysWithoutPaying
     }
     return 0
   }
@@ -90,6 +90,12 @@ export default class Enrollment {
     })
     if (!installment) {
       throw new Error('Invalid installment')
+    }
+    const penalty = this.getPenalty()
+    const interests = this.getInterests()
+    if (penalty && interests) {
+      installment.addEvent(new InvoiceEvent('penalty', penalty * -1))
+      installment.addEvent(new InvoiceEvent('interests', interests * -1))
     }
     installment.addEvent(new InvoiceEvent('payment', amount))
   }

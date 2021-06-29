@@ -1,4 +1,5 @@
 import EnrollmentRepository from '../../data/repositories/Enrollments/EnrollmentRepository'
+import RepositoryAbstractFactory from '../EnrollStudent/RepositoryAbstractFactory'
 
 type PayInvoiceRequest = {
   code: string
@@ -8,13 +9,14 @@ type PayInvoiceRequest = {
 }
 
 export default class PayInvoice {
-  // eslint-disable-next-line no-useless-constructor
-  constructor(private enrollmentRepository: EnrollmentRepository) {
+  private enrollmentRepository: EnrollmentRepository
+
+  constructor(private repositoryFactory: RepositoryAbstractFactory) {
+    this.enrollmentRepository = repositoryFactory.createEnrollmentRepository()
   }
 
-  execute(request: PayInvoiceRequest): number {
+  execute(request: PayInvoiceRequest): void {
     const enrollment = this.enrollmentRepository.findByCode(request.code)
     enrollment.payInstallment(request.month, request.year, request.amount)
-    return enrollment.getInstallmentsBalance()
   }
 }
