@@ -2,13 +2,15 @@ import EnrollStudent from './EnrollStudent'
 import { Classroom } from '../../data/repositories/Courses/Classroom'
 import RepositoryMemoryFactory from './RepositoryMemoryFactory'
 import EnrollStudentInputData from "./EnrollStudentInputData";
+import GetEnrollment from '../GetEnrollment/GetEnrollment';
 
 let enrollStudent: EnrollStudent
+let getEnrollment: GetEnrollment
 
 beforeEach(() => {
-  enrollStudent = new EnrollStudent(
-    new RepositoryMemoryFactory()
-  )
+  const repositoryMemoryFactory = new RepositoryMemoryFactory()
+  enrollStudent = new EnrollStudent(repositoryMemoryFactory)
+  getEnrollment = new GetEnrollment(repositoryMemoryFactory)
 })
 
 test('Should not enroll without valid student name', () => {
@@ -186,6 +188,9 @@ test('Should calculate due date and return status open or overdue for each invoi
     installments: 12
   })
   const enrolledStudent = enrollStudent.execute(enrollmentRequest)
-  expect(enrolledStudent.installments[0].dueDate.toLocaleDateString('pt')).toBe('05/01/2021')
-  expect(enrolledStudent.installments[11].dueDate.toLocaleDateString('pt')).toBe('05/12/2021')
+  const enrollment = getEnrollment.execute(enrolledStudent.code, new Date('2021-06-29'))
+  expect(enrollment.installments[0].dueDate.toLocaleDateString('pt')).toBe('05/01/2021')
+  expect(enrollment.installments[0].status).toBe('overdue')
+  expect(enrollment.installments[11].dueDate.toLocaleDateString('pt')).toBe('05/12/2021')
+  expect(enrollment.installments[11].status).toBe('open')
 })

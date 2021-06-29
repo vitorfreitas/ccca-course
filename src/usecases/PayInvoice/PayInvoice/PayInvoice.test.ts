@@ -35,7 +35,7 @@ test('Should pay enrollment invoice', () => {
     amount: 1416.67
   }
   payInvoice.execute(payInvoiceRequest)
-  const enrollment = getEnrollment.execute(payInvoiceRequest.code)
+  const enrollment = getEnrollment.execute(payInvoiceRequest.code, new Date('2021-06-29'))
   expect(enrollment.balance).toBe(15583.33)
   jest.useRealTimers()
 })
@@ -60,7 +60,7 @@ test('Should pay overdue invoice', () => {
     amount: 4037.5095
   }
   payInvoice.execute(payInvoiceRequest)
-  const enrollment = getEnrollment.execute(payInvoiceRequest.code)
+  const enrollment = getEnrollment.execute(payInvoiceRequest.code, new Date('2021-06-29'))
   expect(enrollment.balance).toBe(15583.33)
   jest.useRealTimers()
 })

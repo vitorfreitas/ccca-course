@@ -9,13 +9,18 @@ export default class GetEnrollment {
     this.enrollmentRepository = repositoryFactory.createEnrollmentRepository()
   }
 
-  execute(code: string): GetEnrollmentOutputData {
+  execute(code: string, currentDate: Date): GetEnrollmentOutputData {
     const enrollment = this.enrollmentRepository.findByCode(code)
-    const penalty = enrollment.getPenalty(new Date())
-    const interests = enrollment.getInterests(new Date())
+    const penalty = enrollment.getPenalty(currentDate)
+    const interests = enrollment.getInterests(currentDate)
+    const installments = enrollment.installments.map(installment => ({
+      status: installment.getStatus(currentDate),
+      dueDate: installment.dueDate
+    }))
     return new GetEnrollmentOutputData(
       enrollment.enrollmentCode.value,
       enrollment.getInstallmentsBalance(),
+      installments,
       penalty,
       interests
     )

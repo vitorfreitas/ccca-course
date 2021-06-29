@@ -24,7 +24,7 @@ test('Should get enrollment by code with invoice balance', () => {
   })
   const code = `${new Date().getFullYear()}EM3A0001`
   const createdEnrollment = enrollStudent.execute(enrollmentRequest)
-  const enrollment = getEnrollment.execute(code)
+  const enrollment = getEnrollment.execute(code, new Date('2021-06-29'))
   expect(enrollment.code).toBe(createdEnrollment.code)
   expect(enrollment.balance).toBe(17000)
 })
@@ -41,7 +41,7 @@ test('Should calculate penalty and interests', () => {
   })
   const code = `${new Date().getFullYear()}EM3A0001`
   const createdEnrollment = enrollStudent.execute(enrollmentRequest)
-  const enrollment = getEnrollment.execute(code)
+  const enrollment = getEnrollment.execute(code, new Date('2021-06-29'))
   expect(enrollment.code).toBe(createdEnrollment.code)
   expect(enrollment.balance).toBe(17000)
   expect(enrollment.penalty).toBe(141.667)

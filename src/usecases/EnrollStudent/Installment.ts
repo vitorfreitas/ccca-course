@@ -18,4 +18,14 @@ export class Installment {
   getBalance(): number {
     return this.events.reduce((total, event) => total - event.amount, this.amount)
   }
+
+  getStatus(fromDate: Date) {
+    if (this.getBalance() === 0) {
+      return 'paid'
+    }
+    if (fromDate.getTime() > this.dueDate.getTime()) {
+      return 'overdue'
+    }
+    return 'open'
+  }
 }
