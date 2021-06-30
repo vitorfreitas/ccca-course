@@ -46,34 +46,6 @@ export default class Enrollment {
     return Number(balance.toFixed(2))
   }
 
-  getPenalty(fromDate: Date = new Date()) {
-    const [
-      firstUnpaidInstallment
-    ] = this.installments.filter(
-      installment => installment.getBalance() > 0
-    )
-    if (firstUnpaidInstallment.dueDate.getMonth() < fromDate.getMonth()) {
-      return firstUnpaidInstallment.getBalance() * .1
-    }
-    return 0
-  }
-
-  getInterests(fromDate: Date = new Date()) {
-    const [
-      firstUnpaidInstallment
-    ] = this.installments.filter(
-      installment => installment.getBalance() > 0
-    )
-    if (firstUnpaidInstallment.dueDate.getMonth() < fromDate.getMonth()) {
-      const daysWithoutPaying = differenceInDays(
-        new Date(),
-        firstUnpaidInstallment.dueDate
-      )
-      return firstUnpaidInstallment.getBalance() * .01 * daysWithoutPaying
-    }
-    return 0
-  }
-
   cancel() {
     this.status = 'cancelled'
   }
@@ -81,21 +53,22 @@ export default class Enrollment {
   payInstallment(
     month: number,
     year: number,
-    amount: number
+    amount: number,
+    paymentDate: Date
   ): void {
     const installment = this.installments.find(installment => {
       const dueYear = installment.dueDate.getFullYear()
       const dueMonth = installment.dueDate.getMonth()
-      return dueYear === year && dueMonth === month
+      return dueYear === year && dueMonth === month - 1
     })
     if (!installment) {
       throw new Error('Invalid installment')
     }
-    const penalty = this.getPenalty()
-    const interests = this.getInterests()
-    if (penalty && interests) {
-      installment.addEvent(new InvoiceEvent('penalty', penalty * -1))
-      installment.addEvent(new InvoiceEvent('interests', interests * -1))
+    const penalty = installment.getPenalty(paymentDate)
+    const interests = installment.getInterests(paymentDate)
+    if (installment.getStatus(paymentDate) === 'overdue') {
+      installment.addEvent(new InvoiceEvent('penalty', penalty))
+      installment.addEvent(new InvoiceEvent('interests', interests))
     }
     installment.addEvent(new InvoiceEvent('payment', amount))
   }

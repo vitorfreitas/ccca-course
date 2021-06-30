@@ -1,5 +1,6 @@
 import EnrollmentRepository from '../../data/repositories/Enrollments/EnrollmentRepository'
 import RepositoryAbstractFactory from '../EnrollStudent/RepositoryAbstractFactory'
+import PayInvoiceInputData from './PayInvoiceInputData'
 
 type PayInvoiceRequest = {
   code: string
@@ -15,8 +16,13 @@ export default class PayInvoice {
     this.enrollmentRepository = repositoryFactory.createEnrollmentRepository()
   }
 
-  execute(request: PayInvoiceRequest): void {
+  execute(request: PayInvoiceInputData): void {
     const enrollment = this.enrollmentRepository.findByCode(request.code)
-    enrollment.payInstallment(request.month, request.year, request.amount)
+    enrollment.payInstallment(
+      request.month,
+      request.year,
+      request.amount,
+      request.currentDate
+    )
   }
 }

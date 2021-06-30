@@ -29,6 +29,24 @@ test('Should get enrollment by code with invoice balance', () => {
   expect(enrollment.balance).toBe(17000)
 })
 
+test('Should calculate due date and return status open or overdue for each invoice', () => {
+  const enrollmentRequest = new EnrollStudentInputData({
+    studentName: 'Maria Carolina Fonseca',
+    studentCpf: '755.525.774-26',
+    studentBirthDate: '2002-03-12',
+    level: 'EM',
+    module: '3',
+    classCode: 'A',
+    installments: 12
+  })
+  const enrolledStudent = enrollStudent.execute(enrollmentRequest)
+  const enrollment = getEnrollment.execute(enrolledStudent.code, new Date('2021-06-29'))
+  expect(enrollment.installments[0].dueDate.toLocaleDateString('pt')).toBe('05/01/2021')
+  expect(enrollment.installments[0].status).toBe('overdue')
+  expect(enrollment.installments[11].dueDate.toLocaleDateString('pt')).toBe('05/12/2021')
+  expect(enrollment.installments[11].status).toBe('open')
+})
+
 test('Should calculate penalty and interests', () => {
   const enrollmentRequest = new EnrollStudentInputData({
     studentName: 'Maria Carolina Fonseca',
@@ -40,10 +58,8 @@ test('Should calculate penalty and interests', () => {
     installments: 12
   })
   const code = `${new Date().getFullYear()}EM3A0001`
-  const createdEnrollment = enrollStudent.execute(enrollmentRequest)
+  enrollStudent.execute(enrollmentRequest)
   const enrollment = getEnrollment.execute(code, new Date('2021-06-29'))
-  expect(enrollment.code).toBe(createdEnrollment.code)
-  expect(enrollment.balance).toBe(17000)
-  expect(enrollment.penalty).toBe(141.667)
-  expect(enrollment.interests).toBe(2479.1725)
+  expect(enrollment.installments[0].penalty).toBe(141.67)
+  expect(enrollment.installments[0].interests).toBe(2465.01)
 })

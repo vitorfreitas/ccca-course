@@ -1,8 +1,9 @@
-import EnrollStudent from '../../EnrollStudent/EnrollStudent'
-import PayInvoice from '../PayInvoice'
-import RepositoryMemoryFactory from '../../EnrollStudent/RepositoryMemoryFactory'
-import EnrollStudentInputData from '../../EnrollStudent/EnrollStudentInputData'
-import GetEnrollment from '../../GetEnrollment/GetEnrollment'
+import EnrollStudent from '../EnrollStudent/EnrollStudent'
+import PayInvoice from './PayInvoice'
+import RepositoryMemoryFactory from '../EnrollStudent/RepositoryMemoryFactory'
+import EnrollStudentInputData from '../EnrollStudent/EnrollStudentInputData'
+import GetEnrollment from '../GetEnrollment/GetEnrollment'
+import PayInvoiceInputData from './PayInvoiceInputData'
 
 let payInvoice: PayInvoice
 let enrollStudent: EnrollStudent
@@ -16,8 +17,6 @@ beforeEach(() => {
 })
 
 test('Should pay enrollment invoice', () => {
-  jest.useFakeTimers('modern')
-  jest.setSystemTime(new Date(2021, 0, 1))
   const enrollmentRequest = new EnrollStudentInputData({
     studentName: 'Maria Carolina Fonseca',
     studentCpf: '755.525.774-26',
@@ -28,21 +27,19 @@ test('Should pay enrollment invoice', () => {
     installments: 12
   })
   enrollStudent.execute(enrollmentRequest)
-  const payInvoiceRequest = {
+  const payInvoiceRequest = new PayInvoiceInputData({
     code: `${new Date().getFullYear()}EM3A0001`,
     month: 1,
     year: 2021,
-    amount: 1416.67
-  }
+    amount: 1416.67,
+    currentDate: new Date('2021-01-05')
+  })
   payInvoice.execute(payInvoiceRequest)
   const enrollment = getEnrollment.execute(payInvoiceRequest.code, new Date('2021-06-29'))
   expect(enrollment.balance).toBe(15583.33)
-  jest.useRealTimers()
 })
 
 test('Should pay overdue invoice', () => {
-  jest.useFakeTimers('modern')
-  jest.setSystemTime(new Date(2021, 5, 29))
   const enrollmentRequest = new EnrollStudentInputData({
     studentName: 'Maria Carolina Fonseca',
     studentCpf: '755.525.774-26',
@@ -53,14 +50,14 @@ test('Should pay overdue invoice', () => {
     installments: 12
   })
   enrollStudent.execute(enrollmentRequest)
-  const payInvoiceRequest = {
+  const payInvoiceRequest = new PayInvoiceInputData({
     code: `${new Date().getFullYear()}EM3A0001`,
     month: 1,
     year: 2021,
-    amount: 4037.5095
-  }
+    amount: 4023.3500000000004,
+    currentDate: new Date('2021-06-29')
+  })
   payInvoice.execute(payInvoiceRequest)
   const enrollment = getEnrollment.execute(payInvoiceRequest.code, new Date('2021-06-29'))
-  expect(enrollment.balance).toBe(15583.33)
-  jest.useRealTimers()
+  expect(enrollment.installments[0].balance).toBe(0)
 })
