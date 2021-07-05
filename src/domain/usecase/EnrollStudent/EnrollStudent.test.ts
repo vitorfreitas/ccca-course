@@ -1,8 +1,8 @@
 import EnrollStudent from './EnrollStudent'
 import { Classroom } from '../../entity/Classroom'
 import RepositoryMemoryFactory from '../../../adapter/factory/RepositoryMemoryFactory'
-import EnrollStudentInputData from "./EnrollStudentInputData";
-import GetEnrollment from '../GetEnrollment/GetEnrollment';
+import EnrollStudentInputData from './EnrollStudentInputData'
+import GetEnrollment from '../GetEnrollment/GetEnrollment'
 
 let enrollStudent: EnrollStudent
 let getEnrollment: GetEnrollment
@@ -13,7 +13,7 @@ beforeEach(() => {
   getEnrollment = new GetEnrollment(repositoryMemoryFactory)
 })
 
-test('Should not enroll without valid student name', () => {
+test('Should not enroll without valid student name', async () => {
   const enrollmentRequest = new EnrollStudentInputData({
     studentName: 'Ana',
     studentCpf: '334.615.023-24',
@@ -23,11 +23,11 @@ test('Should not enroll without valid student name', () => {
     classCode: 'A',
     installments: 12
   })
-  expect(() => enrollStudent.execute(enrollmentRequest))
-    .toThrow('Invalid student name')
+  await expect(() => enrollStudent.execute(enrollmentRequest))
+    .rejects.toThrow('Invalid student name')
 })
 
-test('Should not enroll without valid student cpf', () => {
+test('Should not enroll without valid student cpf', async () => {
   const enrollmentRequest = new EnrollStudentInputData({
     studentName: 'Ana Silva',
     studentCpf: '123.456.789-10',
@@ -37,11 +37,11 @@ test('Should not enroll without valid student cpf', () => {
     classCode: 'A',
     installments: 12
   })
-  expect(() => enrollStudent.execute(enrollmentRequest))
-    .toThrow('Invalid student cpf')
+  await expect(() => enrollStudent.execute(enrollmentRequest))
+    .rejects.toThrow('Invalid student cpf')
 })
 
-test('Should not enroll duplicated student', () => {
+test('Should not enroll duplicated student', async () => {
   const enrollmentRequest = new EnrollStudentInputData({
     studentName: 'Ana Silva',
     studentCpf: '388.880.240-77',
@@ -52,11 +52,11 @@ test('Should not enroll duplicated student', () => {
     installments: 12
   })
   enrollStudent.execute(enrollmentRequest)
-  expect(() => enrollStudent.execute(enrollmentRequest))
-    .toThrow('Enrollment with duplicated student is not allowed')
+  await expect(() => enrollStudent.execute(enrollmentRequest))
+    .rejects.toThrow('Enrollment with duplicated student is not allowed')
 })
 
-test('Should generate enrollment code', () => {
+test('Should generate enrollment code', async () => {
   const enrollmentRequest = new EnrollStudentInputData({
     studentName: 'Maria Carolina Fonseca',
     studentCpf: '755.525.774-26',
@@ -66,12 +66,12 @@ test('Should generate enrollment code', () => {
     classCode: 'A',
     installments: 12
   })
-  const enrolledStudent = enrollStudent.execute(enrollmentRequest)
+  const enrolledStudent = await enrollStudent.execute(enrollmentRequest)
   const currentYear = new Date().getFullYear()
   expect(enrolledStudent.code).toBe(`${currentYear}EM3A0001`)
 })
 
-test('Should not enroll student below minimum age', () => {
+test('Should not enroll student below minimum age', async () => {
   const enrollmentRequest = new EnrollStudentInputData({
     studentName: 'Maria Carolina Fonseca',
     studentCpf: '755.525.774-26',
@@ -81,11 +81,11 @@ test('Should not enroll student below minimum age', () => {
     classCode: 'A',
     installments: 12
   })
-  expect(() => enrollStudent.execute(enrollmentRequest))
-    .toThrow('Student below minimum age')
+  await expect(() => enrollStudent.execute(enrollmentRequest))
+    .rejects.toThrow('Student below minimum age')
 })
 
-test('Should not enroll student over class capacity', () => {
+test('Should not enroll student over class capacity', async () => {
   const enrollmentRequest = new EnrollStudentInputData({
     studentName: 'Maria Carolina Fonseca',
     studentCpf: '755.525.774-26',
@@ -103,11 +103,11 @@ test('Should not enroll student over class capacity', () => {
     })
     enrollStudent.execute(enrollmentRequestMock)
   })
-  expect(() => enrollStudent.execute(enrollmentRequest))
-    .toThrow('Class is over capacity')
+  await expect(() => enrollStudent.execute(enrollmentRequest))
+    .rejects.toThrow('Class is over capacity')
 })
 
-test('Should not enroll after que end of the class', () => {
+test('Should not enroll after que end of the class', async () => {
   const invalidClass = new Classroom({
     level: 'EM',
     module: '3',
@@ -125,12 +125,12 @@ test('Should not enroll after que end of the class', () => {
     classCode: 'A',
     installments: 12
   })
-  enrollStudent['courseRepository'].getClassrooms = () => [invalidClass]
-  expect(() => enrollStudent.execute(enrollmentRequest))
-    .toThrow('Class is already finished')
+  enrollStudent['courseRepository'].getClassrooms = async () => [invalidClass]
+  await expect(() => enrollStudent.execute(enrollmentRequest))
+    .rejects.toThrow('Class is already finished')
 })
 
-test('Should not enroll after 25% of the start of the class', () => {
+test('Should not enroll after 25% of the start of the class', async () => {
   const invalidClass = new Classroom({
     level: 'EM',
     module: '3',
@@ -148,12 +148,12 @@ test('Should not enroll after 25% of the start of the class', () => {
     classCode: 'A',
     installments: 12
   })
-  enrollStudent['courseRepository'].getClassrooms = () => [invalidClass]
-  expect(() => enrollStudent.execute(enrollmentRequest))
-    .toThrow('Class is already started')
+  enrollStudent['courseRepository'].getClassrooms = async () => [invalidClass]
+  await expect(() => enrollStudent.execute(enrollmentRequest))
+    .rejects.toThrow('Class is already started')
 })
 
-test('Should generate the invoices based on the number of installments, rounding each amount and applying the rest in the last invoice', () => {
+test('Should generate the invoices based on the number of installments, rounding each amount and applying the rest in the last invoice', async () => {
   const module = {
     level: 'EM',
     code: '3',
@@ -170,8 +170,8 @@ test('Should generate the invoices based on the number of installments, rounding
     classCode: 'A',
     installments: 12
   })
-  enrollStudent['courseRepository'].getModules = () => [module]
-  const enrolledStudent = enrollStudent.execute(enrollmentRequest)
+  enrollStudent['courseRepository'].getModules = async () => [module]
+  const enrolledStudent = await enrollStudent.execute(enrollmentRequest)
   const installmentsTotal = enrolledStudent.installments.reduce((acc, cur) => acc + cur.amount, 0)
   expect(enrolledStudent.installments.length).toBe(enrollmentRequest.installments)
   expect(installmentsTotal).toBe(module.price)

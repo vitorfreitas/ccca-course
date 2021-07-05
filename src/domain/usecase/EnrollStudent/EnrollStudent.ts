@@ -16,19 +16,19 @@ export default class EnrollStudent {
     this.enrollmentRepository = repositoryFactory.createEnrollmentRepository()
   }
 
-  public execute(enrollmentRequest: EnrollStudentInputData): EnrollStudentOutputData {
+  public async execute(enrollmentRequest: EnrollStudentInputData): Promise<EnrollStudentOutputData> {
     const student = new Student(
       enrollmentRequest.studentName,
       enrollmentRequest.studentCpf,
       enrollmentRequest.studentBirthDate
     )
-    const classroom = this.courseRepository.getClassroom(
+    const classroom = await this.courseRepository.getClassroom(
       enrollmentRequest.classCode,
       enrollmentRequest.level,
       enrollmentRequest.module
     )
-    const level = this.courseRepository.getLevel(enrollmentRequest.level)
-    const module = this.courseRepository.getModule(enrollmentRequest.module, level.code)
+    const level = await this.courseRepository.getLevel(enrollmentRequest.level)
+    const module = await this.courseRepository.getModule(enrollmentRequest.module, level.code)
     const isDuplicatedStudent = this.enrollmentRepository.findByCpf(student.cpf.value)
     if (isDuplicatedStudent) {
       throw new Error('Enrollment with duplicated student is not allowed')

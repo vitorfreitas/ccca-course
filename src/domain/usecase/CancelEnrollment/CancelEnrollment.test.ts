@@ -13,7 +13,7 @@ beforeEach(() => {
   cancelEnrollment = new CancelEnrollment(enrollStudent['enrollmentRepository'])
 })
 
-test('Should cancel enrollment', () => {
+test('Should cancel enrollment', async () => {
   const enrollmentRequest = new EnrollStudentInputData({
     studentName: 'Maria Carolina Fonseca',
     studentCpf: '755.525.774-26',
@@ -23,7 +23,7 @@ test('Should cancel enrollment', () => {
     classCode: 'A',
     installments: 12
   })
-  enrollStudent.execute(enrollmentRequest)
+  await enrollStudent.execute(enrollmentRequest)
   const enrollment = cancelEnrollment.execute({ code: `${new Date().getFullYear()}EM3A0001` })
   expect(enrollment.status).toBe('cancelled')
 })

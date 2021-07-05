@@ -16,7 +16,7 @@ beforeEach(() => {
   getEnrollment = new GetEnrollment(repositoryMemoryFactory)
 })
 
-test('Should pay enrollment invoice', () => {
+test('Should pay enrollment invoice', async () => {
   const enrollmentRequest = new EnrollStudentInputData({
     studentName: 'Maria Carolina Fonseca',
     studentCpf: '755.525.774-26',
@@ -26,7 +26,7 @@ test('Should pay enrollment invoice', () => {
     classCode: 'A',
     installments: 12
   })
-  enrollStudent.execute(enrollmentRequest)
+  await enrollStudent.execute(enrollmentRequest)
   const payInvoiceRequest = new PayInvoiceInputData({
     code: `${new Date().getFullYear()}EM3A0001`,
     month: 1,
@@ -39,7 +39,7 @@ test('Should pay enrollment invoice', () => {
   expect(enrollment.balance).toBe(15583.33)
 })
 
-test('Should pay overdue invoice', () => {
+test('Should pay overdue invoice', async () => {
   const enrollmentRequest = new EnrollStudentInputData({
     studentName: 'Maria Carolina Fonseca',
     studentCpf: '755.525.774-26',
@@ -49,7 +49,7 @@ test('Should pay overdue invoice', () => {
     classCode: 'A',
     installments: 12
   })
-  enrollStudent.execute(enrollmentRequest)
+  await enrollStudent.execute(enrollmentRequest)
   const payInvoiceRequest = new PayInvoiceInputData({
     code: `${new Date().getFullYear()}EM3A0001`,
     month: 1,

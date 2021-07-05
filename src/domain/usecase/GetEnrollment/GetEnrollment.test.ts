@@ -12,7 +12,7 @@ beforeEach(() => {
   getEnrollment = new GetEnrollment(repositoryMemoryFactory)
 })
 
-test('Should get enrollment by code with invoice balance', () => {
+test('Should get enrollment by code with invoice balance', async () => {
   const enrollmentRequest = new EnrollStudentInputData({
     studentName: 'Maria Carolina Fonseca',
     studentCpf: '755.525.774-26',
@@ -23,13 +23,13 @@ test('Should get enrollment by code with invoice balance', () => {
     installments: 12
   })
   const code = `${new Date().getFullYear()}EM3A0001`
-  const createdEnrollment = enrollStudent.execute(enrollmentRequest)
+  const createdEnrollment = await enrollStudent.execute(enrollmentRequest)
   const enrollment = getEnrollment.execute(code, new Date('2021-06-29'))
   expect(enrollment.code).toBe(createdEnrollment.code)
   expect(enrollment.balance).toBe(17000)
 })
 
-test('Should calculate due date and return status open or overdue for each invoice', () => {
+test('Should calculate due date and return status open or overdue for each invoice', async () => {
   const enrollmentRequest = new EnrollStudentInputData({
     studentName: 'Maria Carolina Fonseca',
     studentCpf: '755.525.774-26',
@@ -39,7 +39,7 @@ test('Should calculate due date and return status open or overdue for each invoi
     classCode: 'A',
     installments: 12
   })
-  const enrolledStudent = enrollStudent.execute(enrollmentRequest)
+  const enrolledStudent = await enrollStudent.execute(enrollmentRequest)
   const enrollment = getEnrollment.execute(enrolledStudent.code, new Date('2021-06-29'))
   expect(enrollment.installments[0].dueDate.toLocaleDateString('pt')).toBe('05/01/2021')
   expect(enrollment.installments[0].status).toBe('overdue')
@@ -47,7 +47,7 @@ test('Should calculate due date and return status open or overdue for each invoi
   expect(enrollment.installments[11].status).toBe('open')
 })
 
-test('Should calculate penalty and interests', () => {
+test('Should calculate penalty and interests', async () => {
   const enrollmentRequest = new EnrollStudentInputData({
     studentName: 'Maria Carolina Fonseca',
     studentCpf: '755.525.774-26',
@@ -58,7 +58,7 @@ test('Should calculate penalty and interests', () => {
     installments: 12
   })
   const code = `${new Date().getFullYear()}EM3A0001`
-  enrollStudent.execute(enrollmentRequest)
+  await enrollStudent.execute(enrollmentRequest)
   const enrollment = getEnrollment.execute(code, new Date('2021-06-29'))
   expect(enrollment.installments[0].penalty).toBe(141.67)
   expect(enrollment.installments[0].interests).toBe(2465.01)

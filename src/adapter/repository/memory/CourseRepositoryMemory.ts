@@ -4,7 +4,7 @@ import { Module } from '../../../domain/entity/Module'
 import { Level } from '../../../domain/entity/Level'
 
 export default class CoursesRepositoryMemory implements CourseRepository {
-  getLevels () {
+  async getLevels() {
     return [
       new Level({
         code: 'EF1',
@@ -21,7 +21,7 @@ export default class CoursesRepositoryMemory implements CourseRepository {
     ]
   }
 
-  getModules (): Module[] {
+  async getModules() {
     return [
       new Module({
         level: 'EF1',
@@ -110,7 +110,7 @@ export default class CoursesRepositoryMemory implements CourseRepository {
     ]
   }
 
-  getClassrooms (): Classroom[] {
+  async getClassrooms() {
     return [
       new Classroom({
         level: 'EM',
@@ -139,8 +139,8 @@ export default class CoursesRepositoryMemory implements CourseRepository {
     ]
   }
 
-  getClassroom(classCode: string, level: string, module: string): Classroom {
-    const classrooms = this.getClassrooms()
+  async getClassroom(classCode: string, level: string, module: string) {
+    const classrooms = await this.getClassrooms()
     const classroom = classrooms.find(
       classroom => classroom.code === classCode && classroom.level === level && classroom.module === module
     )
@@ -150,8 +150,8 @@ export default class CoursesRepositoryMemory implements CourseRepository {
     return classroom
   }
 
-  getLevel(code: string): Level {
-    const levels = this.getLevels()
+  async getLevel(code: string) {
+    const levels = await this.getLevels()
     const level = levels.find(level => level.code === code)
     if (!level) {
       throw new Error('Level not found')
@@ -159,8 +159,8 @@ export default class CoursesRepositoryMemory implements CourseRepository {
     return level
   }
 
-  getModule(code: string, level: string): Module {
-    const modules = this.getModules()
+  async getModule(code: string, level: string) {
+    const modules = await this.getModules()
     const module = modules.find(module => module.code === code && module.level === level)
     if (!module) {
       throw new Error('Module not found')
