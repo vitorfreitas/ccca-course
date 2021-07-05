@@ -1,5 +1,5 @@
-import EnrollmentRepository from '../../data/repositories/Enrollments/EnrollmentRepository'
-import RepositoryAbstractFactory from '../EnrollStudent/RepositoryAbstractFactory'
+import EnrollmentRepository from '../../repository/EnrollmentRepository'
+import RepositoryAbstractFactory from '../../factory/RepositoryAbstractFactory'
 import PayInvoiceInputData from './PayInvoiceInputData'
 
 type PayInvoiceRequest = {

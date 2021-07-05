@@ -1,4 +1,4 @@
-import {differenceInDays} from "date-fns";
+import { differenceInDays } from 'date-fns'
 
 export class Classroom {
   level: string

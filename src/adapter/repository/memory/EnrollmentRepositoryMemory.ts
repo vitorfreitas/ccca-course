@@ -1,5 +1,5 @@
-import EnrollmentRepository from './EnrollmentRepository'
-import Enrollment from '../../../usecases/EnrollStudent/Enrollment'
+import EnrollmentRepository from '../../../domain/repository/EnrollmentRepository'
+import Enrollment from '../../../domain/entity/Enrollment'
 
 export default class EnrollmentRepositoryMemory implements EnrollmentRepository {
   private enrollments: Enrollment[]

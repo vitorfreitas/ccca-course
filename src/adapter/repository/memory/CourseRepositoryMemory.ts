@@ -1,7 +1,7 @@
-import CourseRepository from './CourseRepository'
-import { Classroom } from './Classroom'
-import { Module } from './Module'
-import { Level } from './Level'
+import CourseRepository from '../../../domain/repository/CourseRepository'
+import { Classroom } from '../../../domain/entity/Classroom'
+import { Module } from '../../../domain/entity/Module'
+import { Level } from '../../../domain/entity/Level'
 
 export default class CoursesRepositoryMemory implements CourseRepository {
   getLevels () {

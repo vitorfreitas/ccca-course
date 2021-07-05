@@ -1,5 +1,5 @@
-import EnrollmentRepository from '../../data/repositories/Enrollments/EnrollmentRepository'
-import Enrollment from '../EnrollStudent/Enrollment'
+import EnrollmentRepository from '../../repository/EnrollmentRepository'
+import Enrollment from '../../entity/Enrollment'
 
 export default class CancelEnrollment {
   // eslint-disable-next-line no-useless-constructor

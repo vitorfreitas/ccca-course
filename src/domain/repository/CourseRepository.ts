@@ -1,6 +1,6 @@
-import { Classroom } from './Classroom'
-import { Module } from './Module'
-import { Level } from './Level'
+import { Classroom } from '../entity/Classroom'
+import { Module } from '../entity/Module'
+import { Level } from '../entity/Level'
 
 export default interface CourseRepository {
   getLevels(): Level[]

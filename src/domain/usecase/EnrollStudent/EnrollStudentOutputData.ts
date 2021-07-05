@@ -1,4 +1,4 @@
-import { Installment } from './Installment'
+import { Installment } from '../../entity/Installment'
 
 export default class EnrollStudentOutputData {
   code: string

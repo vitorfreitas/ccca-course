@@ -1,6 +1,6 @@
-import EnrollmentRepository from '../../data/repositories/Enrollments/EnrollmentRepository'
+import EnrollmentRepository from '../../repository/EnrollmentRepository'
 import GetEnrollmentOutputData from './GetEnrollmentOutputData'
-import RepositoryAbstractFactory from '../EnrollStudent/RepositoryAbstractFactory'
+import RepositoryAbstractFactory from '../../factory/RepositoryAbstractFactory'
 
 export default class GetEnrollment {
   private enrollmentRepository: EnrollmentRepository

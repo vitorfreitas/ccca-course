@@ -1,6 +1,6 @@
 import EnrollStudent from '../EnrollStudent/EnrollStudent'
 import CancelEnrollment from './CancelEnrollment'
-import RepositoryMemoryFactory from '../EnrollStudent/RepositoryMemoryFactory'
+import RepositoryMemoryFactory from '../../../adapter/factory/RepositoryMemoryFactory'
 import EnrollStudentInputData from '../EnrollStudent/EnrollStudentInputData'
 
 let cancelEnrollment: CancelEnrollment

@@ -1,6 +1,6 @@
 import EnrollStudent from './EnrollStudent'
-import { Classroom } from '../../data/repositories/Courses/Classroom'
-import RepositoryMemoryFactory from './RepositoryMemoryFactory'
+import { Classroom } from '../../entity/Classroom'
+import RepositoryMemoryFactory from '../../../adapter/factory/RepositoryMemoryFactory'
 import EnrollStudentInputData from "./EnrollStudentInputData";
 import GetEnrollment from '../GetEnrollment/GetEnrollment';
 

@@ -1,6 +1,6 @@
 import EnrollStudent from '../EnrollStudent/EnrollStudent'
 import PayInvoice from './PayInvoice'
-import RepositoryMemoryFactory from '../EnrollStudent/RepositoryMemoryFactory'
+import RepositoryMemoryFactory from '../../../adapter/factory/RepositoryMemoryFactory'
 import EnrollStudentInputData from '../EnrollStudent/EnrollStudentInputData'
 import GetEnrollment from '../GetEnrollment/GetEnrollment'
 import PayInvoiceInputData from './PayInvoiceInputData'

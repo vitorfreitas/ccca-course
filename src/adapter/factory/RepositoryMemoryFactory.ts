@@ -1,9 +1,9 @@
-import RepositoryAbstractFactory from './RepositoryAbstractFactory'
-import EnrollmentRepository from '../../data/repositories/Enrollments/EnrollmentRepository'
-import CoursesRepositoryMemory from '../../data/repositories/Courses/CourseRepositoryMemory'
-import CourseRepository from '../../data/repositories/Courses/CourseRepository'
+import RepositoryAbstractFactory from '../../domain/factory/RepositoryAbstractFactory'
+import EnrollmentRepository from '../../domain/repository/EnrollmentRepository'
+import CoursesRepositoryMemory from '../repository/memory/CourseRepositoryMemory'
+import CourseRepository from '../../domain/repository/CourseRepository'
 import EnrollmentRepositoryMemorySingleton
-  from '../../data/repositories/Enrollments/EnrollmentRepositoryMemorySingleton'
+  from '../repository/memory/EnrollmentRepositoryMemorySingleton'
 
 export default class RepositoryMemoryFactory implements RepositoryAbstractFactory {
   constructor() {
